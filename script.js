@@ -5,6 +5,7 @@ const MOBILE_GRID_SIZE = 11;
 const MOBILE_MEDIA_QUERY = window.matchMedia("(max-width: 760px)");
 const STORAGE_KEYS = {
   favorites: "color-picker-favorites",
+  recentColors: "color-picker-recent-colors",
   recentLimit: "color-picker-recent-limit",
   theme: "color-picker-theme",
 };
@@ -347,6 +348,7 @@ function loadStoredArray(key) {
 function persistState() {
   try {
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(state.favoriteColors));
+    localStorage.setItem(STORAGE_KEYS.recentColors, JSON.stringify(state.recentColors));
     localStorage.setItem(STORAGE_KEYS.recentLimit, String(state.recentLimit));
     localStorage.setItem(STORAGE_KEYS.theme, state.theme);
   } catch {
@@ -356,6 +358,7 @@ function persistState() {
 
 function loadStoredState() {
   state.favoriteColors = loadStoredArray(STORAGE_KEYS.favorites);
+  state.recentColors = loadStoredArray(STORAGE_KEYS.recentColors);
 
   const storedLimit = Number(localStorage.getItem(STORAGE_KEYS.recentLimit));
   if (storedLimit === EXTENDED_RECENT_LIMIT) {
@@ -374,6 +377,7 @@ function recordRecentColor(hex) {
   }
 
   state.recentColors = [hex, ...state.recentColors.filter((item) => item !== hex)].slice(0, state.recentLimit);
+  persistState();
 }
 
 function trimRecentColors() {
@@ -1065,6 +1069,7 @@ function setupEvents() {
   elements.recentLimit16.addEventListener("click", () => setRecentLimit(EXTENDED_RECENT_LIMIT));
   elements.clearRecentButton.addEventListener("click", () => {
     state.recentColors = [];
+    persistState();
     scheduleRender();
   });
   elements.eyedropperButton.addEventListener("click", pickColorFromScreen);
@@ -1148,7 +1153,9 @@ function init() {
     setInputState("invalid", "当前浏览器不支持 2D 画布，无法显示 HSV 面板");
   }
 
-  recordRecentColor(state.hex);
+  if (state.recentColors.length === 0) {
+    recordRecentColor(state.hex);
+  }
   setupEvents();
   setupThemeInstallAndPwa();
   scheduleRender();

@@ -139,6 +139,19 @@ test("supports favorites, recent controls and theme toggle persistence hooks", a
   await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
 });
 
+test("persists recent colors across reloads", async ({ page }) => {
+  await page.goto("/index.html");
+
+  await fillHex(page, "#00FF00");
+  await fillHex(page, "#0000FF");
+  await page.reload();
+
+  await expect(page.locator("#recentColors .recent-swatch")).toHaveCount(3);
+  await expect(page.locator("#recentColors .recent-swatch").nth(0)).toHaveAttribute("title", "#0000FF");
+  await expect(page.locator("#recentColors .recent-swatch").nth(1)).toHaveAttribute("title", "#00FF00");
+  await expect(page.locator("#recentColors .recent-swatch").nth(2)).toHaveAttribute("title", "#FF0000");
+});
+
 test("copies extended formats and exposes derived information", async ({ page, context, browserName }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/index.html");
