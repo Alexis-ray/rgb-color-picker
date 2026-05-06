@@ -1,0 +1,17 @@
+{
+  "name": "RGB 颜色选择器",
+  "short_name": "颜色选择器",
+  "description": "单页 RGB 颜色选择与调色工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%232563eb'/%3E%3Ccircle cx='96' cy='96' r='56' fill='%23ffffff'/%3E%3Cpath d='M96 40a56 56 0 0 1 48.5 28H47.5A56 56 0 0 1 96 40Z' fill='%23ef4444'/%3E%3Cpath d='M47.5 68a56 56 0 0 0 0 56h97a56 56 0 0 0 0-56Z' fill='%2322c55e'/%3E%3Cpath d='M47.5 124A56 56 0 0 0 96 152a56 56 0 0 0 48.5-28Z' fill='%23eab308'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

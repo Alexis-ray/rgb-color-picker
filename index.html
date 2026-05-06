@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <title>RGB 颜色选择器</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">单页颜色选择工具</p>
+          <h1>RGB 颜色选择器</h1>
+          <p class="hero-copy">
+            先拖动色相条选颜色方向，再在二维面板里找深浅，最后点击局部色块拿到精确编码。
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="themeToggle" class="chip-button" type="button">深色模式</button>
+          <button id="installButton" class="chip-button" type="button" hidden>安装应用</button>
+        </div>
+      </header>
+
+      <section class="layout" aria-label="颜色选择工作区">
+        <aside class="panel summary-panel">
+          <h2>当前颜色</h2>
+          <div
+            id="colorPreview"
+            class="color-preview"
+            aria-label="当前颜色预览"
+          ></div>
+
+          <div class="value-list" aria-live="polite">
+            <div class="value-card">
+              <span class="value-label">Hex</span>
+              <strong id="hexValue" class="value-code">#FF0000</strong>
+            </div>
+            <div class="value-card">
+              <span class="value-label">RGB</span>
+              <strong id="rgbValue" class="value-code">rgb(255, 0, 0)</strong>
+            </div>
+            <div class="value-card">
+              <span class="value-label">HSV</span>
+              <strong id="hsvValue" class="value-code">hsv(0, 100%, 100%)</strong>
+            </div>
+            <div class="value-card">
+              <span class="value-label">HSL</span>
+              <strong id="hslValue" class="value-code">hsl(0, 100%, 50%)</strong>
+            </div>
+          </div>
+
+          <div class="action-stack">
+            <button id="copyButton" class="primary-button" type="button">
+              复制 Hex
+            </button>
+            <div class="chip-row" aria-label="复制更多颜色格式">
+              <button id="copyRgbButton" class="chip-button" type="button">复制 RGB</button>
+              <button id="copyHslButton" class="chip-button" type="button">复制 HSL</button>
+              <button id="copyHsvButton" class="chip-button" type="button">复制 HSV</button>
+            </div>
+          </div>
+          <p id="copyFeedback" class="feedback" aria-live="polite"></p>
+
+          <section class="subsection" aria-labelledby="favoritesTitle">
+            <div class="section-head">
+              <h3 id="favoritesTitle">收藏颜色</h3>
+              <div class="chip-row compact-actions">
+                <button id="favoriteToggle" class="chip-button" type="button">加入收藏</button>
+                <button id="exportJsonButton" class="chip-button" type="button">导出 JSON</button>
+                <button id="exportTxtButton" class="chip-button" type="button">导出 TXT</button>
+                <button id="exportCssButton" class="chip-button" type="button">导出 CSS</button>
+              </div>
+            </div>
+            <div id="favoriteColors" class="recent-colors"></div>
+          </section>
+
+          <section class="subsection" aria-labelledby="recentColorsTitle">
+            <div class="section-head">
+              <h3 id="recentColorsTitle">最近使用</h3>
+              <div class="chip-row compact-actions">
+                <span id="recentLimitLabel" class="section-note">保留最近 10 个颜色</span>
+                <button id="recentLimit10" class="chip-button" type="button">10</button>
+                <button id="recentLimit16" class="chip-button" type="button">16</button>
+                <button id="clearRecentButton" class="chip-button" type="button">清空历史</button>
+              </div>
+            </div>
+            <div id="recentColors" class="recent-colors"></div>
+          </section>
+
+          <section class="subsection" aria-labelledby="paletteTitle">
+            <div class="section-head">
+              <h3 id="paletteTitle">联动调色板</h3>
+              <span class="section-note">基于当前颜色自动生成</span>
+            </div>
+            <div id="generatedPalette" class="palette-grid"></div>
+          </section>
+
+          <section class="subsection" aria-labelledby="readabilityTitle">
+            <div class="section-head">
+              <h3 id="readabilityTitle">可读性分析</h3>
+              <span class="section-note">帮助判断文字颜色</span>
+            </div>
+            <div class="value-list compact-list">
+              <div class="value-card">
+                <span class="value-label">白底对比度</span>
+                <strong id="contrastWhite" class="value-code">1.00</strong>
+              </div>
+              <div class="value-card">
+                <span class="value-label">黑底对比度</span>
+                <strong id="contrastBlack" class="value-code">1.00</strong>
+              </div>
+              <div class="value-card">
+                <span class="value-label">推荐文字</span>
+                <strong id="readabilitySuggestion" class="value-code">浅色文字</strong>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="panel control-panel">
+          <div class="subsection">
+            <div class="section-head">
+              <h2>编码输入</h2>
+              <span class="section-note">支持 #RRGGBB、RRGGBB、#RGB</span>
+            </div>
+            <label class="input-label" for="hexInput">十六进制颜色</label>
+            <input
+              id="hexInput"
+              class="hex-input"
+              type="text"
+              inputmode="text"
+              spellcheck="false"
+              autocomplete="off"
+              aria-describedby="inputHelp inputError"
+              placeholder="#FF0000"
+            />
+            <p id="inputHelp" class="help-text">
+              合法输入会立即同步到预览、面板和局部色块。
+            </p>
+            <p id="inputError" class="error-text" aria-live="polite"></p>
+          </div>
+
+          <div class="subsection">
+            <div class="section-head">
+              <h2>RGB 输入</h2>
+              <span class="section-note">支持 0-255，超出会自动收敛</span>
+            </div>
+            <div class="rgb-inputs">
+              <label class="channel-input" for="rInput">
+                <span class="input-label">R</span>
+                <input id="rInput" type="number" inputmode="numeric" min="0" max="255" step="1" />
+              </label>
+              <label class="channel-input" for="gInput">
+                <span class="input-label">G</span>
+                <input id="gInput" type="number" inputmode="numeric" min="0" max="255" step="1" />
+              </label>
+              <label class="channel-input" for="bInput">
+                <span class="input-label">B</span>
+                <input id="bInput" type="number" inputmode="numeric" min="0" max="255" step="1" />
+              </label>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="section-head">
+              <h2>扩展工具</h2>
+              <span class="section-note">增强交互和跨页面取色</span>
+            </div>
+            <div class="chip-row">
+              <button id="eyedropperButton" class="chip-button" type="button">吸管取色</button>
+            </div>
+            <p id="eyedropperFeedback" class="feedback" aria-live="polite"></p>
+          </div>
+
+          <div class="subsection">
+            <div class="section-head">
+              <h2>色相滑条</h2>
+              <span id="hueLabel" class="section-note">H: 0°</span>
+            </div>
+            <div
+              id="hueSlider"
+              class="hue-slider"
+              role="slider"
+              tabindex="0"
+              aria-label="色相滑条"
+              aria-valuemin="0"
+              aria-valuemax="360"
+              aria-valuenow="0"
+            >
+              <div id="hueHandle" class="slider-handle" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="section-head">
+              <h2>HSV 颜色面板</h2>
+              <span class="section-note">横向控制饱和度，纵向控制明度</span>
+            </div>
+            <div class="sv-wrapper">
+              <canvas
+                id="svCanvas"
+                class="sv-canvas"
+                width="320"
+                height="320"
+                aria-label="HSV 二维颜色面板"
+              ></canvas>
+              <div id="svHandle" class="sv-handle" aria-hidden="true"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel grid-panel">
+          <div class="section-head">
+            <h2>局部精细色块</h2>
+            <span id="gridPlaneInfo" class="section-note">当前平面 RG，固定 B</span>
+          </div>
+          <p id="gridDetailInfo" class="help-text">
+            当前网格围绕当前颜色生成，中心格表示离当前颜色最近的离散色。
+          </p>
+
+          <div class="toolbar-group" aria-label="网格平面模式">
+            <span class="toolbar-label">平面模式</span>
+            <div class="chip-row" id="planeModeButtons">
+              <button type="button" class="chip-button" data-plane-mode="RG">RG</button>
+              <button type="button" class="chip-button" data-plane-mode="RB">RB</button>
+              <button type="button" class="chip-button" data-plane-mode="GB">GB</button>
+            </div>
+          </div>
+
+          <div class="toolbar-group" aria-label="网格步进模式">
+            <span class="toolbar-label">步进精度</span>
+            <div class="chip-row" id="gridStepButtons">
+              <button type="button" class="chip-button" data-grid-step="16">16</button>
+              <button type="button" class="chip-button" data-grid-step="8">8</button>
+              <button type="button" class="chip-button" data-grid-step="4">4</button>
+              <button type="button" class="chip-button" data-grid-step="1">1</button>
+            </div>
+          </div>
+
+          <p class="help-text">
+            步进越小越精细。点击任意色块后，页面会立刻返回对应的 Hex 和 RGB。
+          </p>
+
+          <div id="gridContainer" class="grid-container" aria-label="局部颜色网格"></div>
+
+          <section class="subsection instructions" aria-labelledby="instructionsTitle">
+            <h3 id="instructionsTitle">使用说明</h3>
+            <ol>
+              <li>先拖动色相条，确定颜色大方向。</li>
+              <li>再在二维面板中选择大概深浅和纯度。</li>
+              <li>最后在局部网格中点到精确色块。</li>
+              <li>如果已经知道编码，也可以直接输入 Hex。</li>
+            </ol>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
